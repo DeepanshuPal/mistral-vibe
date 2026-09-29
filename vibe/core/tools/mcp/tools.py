@@ -347,7 +347,9 @@ def create_mcp_http_proxy_tool_class(
                 )
 
             return ToolResultDisplay(
-                success=event.result.ok, verb="Ran", message=event.result.tool
+                success=event.result.ok,
+                verb="Ran",
+                message=cls._branded(event.result.tool),
             )
 
         @classmethod
@@ -559,7 +561,9 @@ def create_mcp_stdio_proxy_tool_class(
                 )
 
             return ToolResultDisplay(
-                success=event.result.ok, verb="Ran", message=event.result.tool
+                success=event.result.ok,
+                verb="Ran",
+                message=cls._branded(event.result.tool),
             )
 
         @classmethod

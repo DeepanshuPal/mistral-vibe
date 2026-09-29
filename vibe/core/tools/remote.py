@@ -6,7 +6,7 @@ from typing import Any, ClassVar
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from vibe.core.tools.base import BaseTool, BaseToolConfig, BaseToolState
-from vibe.core.tools.ui import ToolUIData
+from vibe.core.tools.ui import ToolCallDisplay, ToolUIData
 
 
 class AuthStatus(StrEnum):
@@ -18,6 +18,11 @@ class AuthStatus(StrEnum):
 
 class _OpenArgs(BaseModel):
     model_config = ConfigDict(extra="allow")
+
+
+# The Mistral M mark shown on calls to Mistral's own MCP server, echoing the
+# pixelated M of the brand logo.
+_MISTRAL_BRAND_GLYPH = "\u24c2"
 
 
 class MCPToolResult(BaseModel):
@@ -47,6 +52,26 @@ class MCPTool(
     @classmethod
     def is_connector(cls) -> bool:
         return cls._is_connector
+
+    @classmethod
+    def is_mistral_brand(cls) -> bool:
+        return not cls._is_connector and "mistral" in cls._server_name.lower()
+
+    @classmethod
+    def brand_prefix(cls) -> str:
+        return _MISTRAL_BRAND_GLYPH if cls.is_mistral_brand() else ""
+
+    @classmethod
+    def _branded(cls, text: str) -> str:
+        glyph = cls.brand_prefix()
+        return f"{glyph} {text}" if glyph else text
+
+    @classmethod
+    def format_call_display(cls, args: _OpenArgs) -> ToolCallDisplay:
+        summary = cls._branded(cls._display_name())
+        return ToolCallDisplay(
+            summary=summary, message=summary, settled_message=summary
+        )
 
 
 class RemoteTool(BaseModel):
